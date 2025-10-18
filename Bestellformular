@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Praxis-Bestellformular</title>
+  <style>
+    body { font-family: Arial; max-width: 1000px; margin: 2rem auto; padding: 1rem; background: #f4f7fb; }
+    h1 { text-align: center; color: #034f84; }
+    label { display: block; margin-top: 12px; font-weight: bold; }
+    input, textarea { width: 100%; padding: 6px; margin-top: 4px; box-sizing: border-box; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; background: #fff; }
+    th, td { border: 1px solid #d7d7d7; padding: 8px; text-align: left; }
+    th { background: #e9f2fb; }
+    button { margin-top: 12px; padding: 10px 16px; border: none; border-radius: 6px; background: #034f84; color: #fff; cursor: pointer; }
+    .message { margin-top: 12px; font-weight: bold; }
+    textarea { resize: vertical; }
+  </style>
+</head>
+<body>
+  <h1>Praxis-Bestellformular</h1>
+
+  <form id="orderForm">
+    <label for="praxis">Praxisname (Pflichtfeld):</label>
+    <input type="text" id="praxis" name="praxis" required placeholder="Name der Praxis">
+
+    <table>
+      <thead>
+        <tr>
+          <th>Artikel</th>
+          <th>PZN</th>
+          <th>Menge</th>
+          <th>Geliefert am</th>
+          <th>Geliefert von</th>
+          <th>Notizen</th>
+        </tr>
+      </thead>
+      <tbody id="orderTableBody">
+      </tbody>
+    </table>
+
+    <button type="submit">Bestellung senden</button>
+    <div class="message" id="message"></div>
+  </form>
+
+  <script>
+    const ZAPIER_URL = 'https://hooks.zapier.com/hooks/catch/25024650/ur20vme/';
+    const ROWS = 10;
+
+    // Tabelle erzeugen
+    const tbody = document.getElementById('orderTableBody');
+    for (let i = 1; i <= ROWS; i++) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" name="artikel_${i}" /></td>
+        <td><input type="text" name="pzn_${i}" /></td>
+        <td><input type="number" name="menge_${i}" min="0" /></td>
+        <td><input type="date" name="geliefert_am_${i}" /></td>
+        <td><input type="text" name="geliefert_von_${i}" /></td>
+        <td><textarea name="notizen_${i}" rows="1"></textarea></td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    document.getElementById('orderForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const praxis = form.praxis.value.trim();
+      if (!praxis) { document.getElementById('message').textContent = 'Bitte Praxisname ausfüllen.'; return; }
+
+      const formData = new FormData();
+      formData.append('praxis', praxis);
+
+      for (let i = 1; i <= ROWS; i++) {
+        const artikel = form[`artikel_${i}`].value.trim();
+        const pzn = form[`pzn_${i}`].value.trim();
+        const menge = form[`menge_${i}`].value.trim();
+        const geliefert_am = form[`geliefert_am_${i}`].value.trim();
+        const geliefert_von = form[`geliefert_von_${i}`].value.trim();
+        const notizen = form[`notizen_${i}`].value.trim();
+        if (artikel || pzn || menge || geliefert_am || geliefert_von || notizen) {
+          formData.append(`artikel_${i}`, artikel);
+          formData.append(`pzn_${i}`, pzn);
+          formData.append(`menge_${i}`, menge);
+          formData.append(`geliefert_am_${i}`, geliefert_am);
+          formData.append(`geliefert_von_${i}`, geliefert_von);
+          formData.append(`notizen_${i}`, notizen);
+        }
+      }
+
+      const messageEl = document.getElementById('message');
+      messageEl.textContent = 'Sende Bestellung...';
+
+      try {
+        const resp = await fetch(ZAPIER_URL, { method: 'POST', body: formData });
+        if (resp.ok) { messageEl.textContent = '✅ Bestellung erfolgreich gesendet!'; form.reset(); }
+        else { messageEl.textContent = `❌ Serverantwort: ${resp.statusText || resp.status}`; }
+      } catch (err) {
+        console.error(err);
+        messageEl.textContent = '⚠️ Verbindungsfehler. Bitte überprüfe die Internetverbindung.';
+      }
+    });
+  </script>
+</body>
+</html>
