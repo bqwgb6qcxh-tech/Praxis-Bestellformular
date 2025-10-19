@@ -1,137 +1,121 @@
-<h2>Neue Praxis-Bestellung</h2>
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Praxis-Bestellformular</title>
+  <style>
+    body { font-family: Arial; max-width: 1000px; margin: 2rem auto; padding: 1rem; background: #f4f7fb; }
+    h1 { text-align: center; color: #034f84; }
+    label { display: block; margin-top: 12px; font-weight: bold; }
+    input, textarea { width: 100%; padding: 6px; margin-top: 4px; box-sizing: border-box; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; background: #fff; }
+    th, td { border: 1px solid #d7d7d7; padding: 8px; text-align: left; }
+    th { background: #e9f2fb; }
+    button { margin-top: 12px; padding: 10px 16px; border: none; border-radius: 6px; background: #034f84; color: #fff; cursor: pointer; }
+    .message { margin-top: 12px; font-weight: bold; }
+    textarea { resize: vertical; }
+  </style>
+</head>
+<body>
+  <h1>Praxis-Bestellformular</h1>
 
-<!-- Neuer Kontaktblock, oberhalb der Praxisangabe -->
-<div style="text-align: center; margin-bottom: 20px; font-family: Arial, sans-serif;">
-  <p>Bestellung</p>
-  <p><strong style="color: #8B0000;">Kurfürsten-Apotheke</strong></p>
-  <p>info@kurfuerstenapotheke.de</p>
-  <p>Tel. 089/271 01 58</p>
-  <p>www.kurfuerstenapotheke.de</p>
-</div>
+  <!-- NEUER KONTAKTBLOCK -->
+  <div style="text-align: center; margin-bottom: 20px; font-family: Arial, sans-serif;">
+    <p>Bestellung</p>
+    <p><strong style="color: #8B0000;">Kurfürsten-Apotheke</strong></p>
+    <p>info@kurfuerstenapotheke.de</p>
+    <p>Tel. 089/271 01 58</p>
+    <p>www.kurfuerstenapotheke.de</p>
+  </div>
 
-<!-- Original Formular bleibt unverändert -->
-<p><strong>Praxis:</strong> {{praxis}}</p>
+  <form id="orderForm">
+    <label for="praxis">Praxisname (Pflichtfeld):</label>
+    <input type="text" id="praxis" name="praxis" required placeholder="Name der Praxis">
 
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif;">
-  <thead>
-    <tr style="background-color: #e9f2fb;">
-      <th>Artikel</th>
-      <th>PZN</th>
-      <th>Menge</th>
-      <th>Geliefert am</th>
-      <th>Geliefert von</th>
-      <th>Notizen</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#artikel_1}}
-    <tr>
-      <td>{{artikel_1}}</td>
-      <td>{{pzn_1}}</td>
-      <td>{{menge_1}}</td>
-      <td>{{geliefert_am_1}}</td>
-      <td>{{geliefert_von_1}}</td>
-      <td>{{notizen_1}}</td>
-    </tr>
-    {{/artikel_1}}
+    <table>
+      <thead>
+        <tr>
+          <th>Artikel</th>
+          <th>PZN</th>
+          <th>Menge</th>
+          <th>Geliefert am</th>
+          <th>Geliefert von</th>
+          <th>Notizen</th>
+        </tr>
+      </thead>
+      <tbody id="orderTableBody">
+      </tbody>
+    </table>
 
-    {{#artikel_2}}
-    <tr>
-      <td>{{artikel_2}}</td>
-      <td>{{pzn_2}}</td>
-      <td>{{menge_2}}</td>
-      <td>{{geliefert_am_2}}</td>
-      <td>{{geliefert_von_2}}</td>
-      <td>{{notizen_2}}</td>
-    </tr>
-    {{/artikel_2}}
+    <button type="submit">Bestellung senden</button>
+    <div class="message" id="message"></div>
+  </form>
 
-    {{#artikel_3}}
-    <tr>
-      <td>{{artikel_3}}</td>
-      <td>{{pzn_3}}</td>
-      <td>{{menge_3}}</td>
-      <td>{{geliefert_am_3}}</td>
-      <td>{{geliefert_von_3}}</td>
-      <td>{{notizen_3}}</td>
-    </tr>
-    {{/artikel_3}}
+  <script>
+    const ZAPIER_URL = 'https://hooks.zapier.com/hooks/catch/25024650/ur20vme/';
+    const ROWS = 10;
 
-    {{#artikel_4}}
-    <tr>
-      <td>{{artikel_4}}</td>
-      <td>{{pzn_4}}</td>
-      <td>{{menge_4}}</td>
-      <td>{{geliefert_am_4}}</td>
-      <td>{{geliefert_von_4}}</td>
-      <td>{{notizen_4}}</td>
-    </tr>
-    {{/artikel_4}}
+    // Tabelle erzeugen
+    const tbody = document.getElementById('orderTableBody');
+    for (let i = 1; i <= ROWS; i++) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" name="artikel_${i}" /></td>
+        <td><input type="text" name="pzn_${i}" /></td>
+        <td><input type="number" name="menge_${i}" min="0" /></td>
+        <td><input type="date" name="geliefert_am_${i}" /></td>
+        <td><input type="text" name="geliefert_von_${i}" /></td>
+        <td><textarea name="notizen_${i}" rows="1"></textarea></td>
+      `;
+      tbody.appendChild(tr);
+    }
 
-    {{#artikel_5}}
-    <tr>
-      <td>{{artikel_5}}</td>
-      <td>{{pzn_5}}</td>
-      <td>{{menge_5}}</td>
-      <td>{{geliefert_am_5}}</td>
-      <td>{{geliefert_von_5}}</td>
-      <td>{{notizen_5}}</td>
-    </tr>
-    {{/artikel_5}}
+    document.getElementById('orderForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const praxis = form.praxis.value.trim();
+      if (!praxis) { 
+        document.getElementById('message').textContent = 'Bitte Praxisname ausfüllen.'; 
+        return; 
+      }
 
-    {{#artikel_6}}
-    <tr>
-      <td>{{artikel_6}}</td>
-      <td>{{pzn_6}}</td>
-      <td>{{menge_6}}</td>
-      <td>{{geliefert_am_6}}</td>
-      <td>{{geliefert_von_6}}</td>
-      <td>{{notizen_6}}</td>
-    </tr>
-    {{/artikel_6}}
+      const formData = new FormData();
+      formData.append('praxis', praxis);
 
-    {{#artikel_7}}
-    <tr>
-      <td>{{artikel_7}}</td>
-      <td>{{pzn_7}}</td>
-      <td>{{menge_7}}</td>
-      <td>{{geliefert_am_7}}</td>
-      <td>{{geliefert_von_7}}</td>
-      <td>{{notizen_7}}</td>
-    </tr>
-    {{/artikel_7}}
+      for (let i = 1; i <= ROWS; i++) {
+        const artikel = form[`artikel_${i}`].value.trim();
+        const pzn = form[`pzn_${i}`].value.trim();
+        const menge = form[`menge_${i}`].value.trim();
+        const geliefert_am = form[`geliefert_am_${i}`].value.trim();
+        const geliefert_von = form[`geliefert_von_${i}`].value.trim();
+        const notizen = form[`notizen_${i}`].value.trim();
+        if (artikel || pzn || menge || geliefert_am || geliefert_von || notizen) {
+          formData.append(`artikel_${i}`, artikel);
+          formData.append(`pzn_${i}`, pzn);
+          formData.append(`menge_${i}`, menge);
+          formData.append(`geliefert_am_${i}`, geliefert_am);
+          formData.append(`geliefert_von_${i}`, geliefert_von);
+          formData.append(`notizen_${i}`, notizen);
+        }
+      }
 
-    {{#artikel_8}}
-    <tr>
-      <td>{{artikel_8}}</td>
-      <td>{{pzn_8}}</td>
-      <td>{{menge_8}}</td>
-      <td>{{geliefert_am_8}}</td>
-      <td>{{geliefert_von_8}}</td>
-      <td>{{notizen_8}}</td>
-    </tr>
-    {{/artikel_8}}
+      const messageEl = document.getElementById('message');
+      messageEl.textContent = 'Sende Bestellung...';
 
-    {{#artikel_9}}
-    <tr>
-      <td>{{artikel_9}}</td>
-      <td>{{pzn_9}}</td>
-      <td>{{menge_9}}</td>
-      <td>{{geliefert_am_9}}</td>
-      <td>{{geliefert_von_9}}</td>
-      <td>{{notizen_9}}</td>
-    </tr>
-    {{/artikel_9}}
-
-    {{#artikel_10}}
-    <tr>
-      <td>{{artikel_10}}</td>
-      <td>{{pzn_10}}</td>
-      <td>{{menge_10}}</td>
-      <td>{{geliefert_am_10}}</td>
-      <td>{{geliefert_von_10}}</td>
-      <td>{{notizen_10}}</td>
-    </tr>
-    {{/artikel_10}}
-  </tbody>
-</table>
+      try {
+        const resp = await fetch(ZAPIER_URL, { method: 'POST', body: formData });
+        if (resp.ok) { 
+          messageEl.textContent = '✅ Bestellung erfolgreich gesendet!'; 
+          form.reset(); 
+        } else { 
+          messageEl.textContent = `❌ Serverantwort: ${resp.statusText || resp.status}`; 
+        }
+      } catch (err) {
+        console.error(err);
+        messageEl.textContent = '⚠️ Verbindungsfehler. Bitte überprüfe die Internetverbindung.';
+      }
+    });
+  </script>
+</body>
+</html>
