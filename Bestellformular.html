@@ -8,7 +8,7 @@
     body { font-family: Arial; max-width: 1000px; margin: 2rem auto; padding: 1rem; background: #f4f7fb; }
     h1 { text-align: center; color: #034f84; }
     label { display: block; margin-top: 12px; font-weight: bold; }
-    input, textarea { width: 100%; padding: 6px; margin-top: 4px; box-sizing: border-box; }
+    input, textarea, select { width: 100%; padding: 6px; margin-top: 4px; box-sizing: border-box; }
     table { width: 100%; border-collapse: collapse; margin-top: 16px; background: #fff; }
     th, td { border: 1px solid #d7d7d7; padding: 8px; text-align: left; }
     th { background: #e9f2fb; }
@@ -32,6 +32,14 @@
   <form id="orderForm">
     <label for="praxis">Praxisname (Pflichtfeld):</label>
     <input type="text" id="praxis" name="praxis" required placeholder="Name der Praxis">
+
+    <!-- NEUES FELD: ABRECHNUNG -->
+    <label for="abrechnung">Abrechnung (Pflichtfeld):</label>
+    <select id="abrechnung" name="abrechnung" required>
+      <option value="" disabled selected>Bitte auswählen</option>
+      <option value="PC-Bedarf">PC-Bedarf</option>
+      <option value="auf Rechnung">auf Rechnung</option>
+    </select>
 
     <table>
       <thead>
@@ -74,14 +82,18 @@
     document.getElementById('orderForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const form = e.target;
+
       const praxis = form.praxis.value.trim();
-      if (!praxis) { 
-        document.getElementById('message').textContent = 'Bitte Praxisname ausfüllen.'; 
-        return; 
+      const abrechnung = form.abrechnung.value.trim();
+
+      if (!praxis || !abrechnung) {
+        document.getElementById('message').textContent = 'Bitte alle Pflichtfelder ausfüllen.';
+        return;
       }
 
       const formData = new FormData();
       formData.append('praxis', praxis);
+      formData.append('abrechnung', abrechnung);
 
       for (let i = 1; i <= ROWS; i++) {
         const artikel = form[`artikel_${i}`].value.trim();
