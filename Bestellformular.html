@@ -33,7 +33,6 @@
     <label for="praxis">Praxisname (Pflichtfeld):</label>
     <input type="text" id="praxis" name="praxis" required placeholder="Name der Praxis">
 
-    <!-- NEUES FELD: ABRECHNUNG -->
     <label for="abrechnung">Abrechnung (Pflichtfeld):</label>
     <select id="abrechnung" name="abrechnung" required>
       <option value="" disabled selected>Bitte auswählen</option>
@@ -95,6 +94,8 @@
       formData.append('praxis', praxis);
       formData.append('abrechnung', abrechnung);
 
+      // Artikel-Daten sammeln
+      const filledArticles = [];
       for (let i = 1; i <= ROWS; i++) {
         const artikel = form[`artikel_${i}`].value.trim();
         const pzn = form[`pzn_${i}`].value.trim();
@@ -102,6 +103,7 @@
         const geliefert_am = form[`geliefert_am_${i}`].value.trim();
         const geliefert_von = form[`geliefert_von_${i}`].value.trim();
         const notizen = form[`notizen_${i}`].value.trim();
+
         if (artikel || pzn || menge || geliefert_am || geliefert_von || notizen) {
           formData.append(`artikel_${i}`, artikel);
           formData.append(`pzn_${i}`, pzn);
@@ -109,19 +111,63 @@
           formData.append(`geliefert_am_${i}`, geliefert_am);
           formData.append(`geliefert_von_${i}`, geliefert_von);
           formData.append(`notizen_${i}`, notizen);
+
+          filledArticles.push({
+            artikel, pzn, menge, geliefert_am, geliefert_von, notizen
+          });
         }
       }
 
       const messageEl = document.getElementById('message');
-      messageEl.textContent = 'Sende Bestellung...';
+      messageEl.innerHTML = '<p>Sende Bestellung...</p>';
 
       try {
         const resp = await fetch(ZAPIER_URL, { method: 'POST', body: formData });
-        if (resp.ok) { 
-          messageEl.textContent = '✅ Bestellung erfolgreich gesendet!'; 
-          form.reset(); 
-        } else { 
-          messageEl.textContent = `❌ Serverantwort: ${resp.statusText || resp.status}`; 
+
+        if (resp.ok) {
+          // Bestellübersicht anzeigen
+          let displayHtml = `
+            <div style="background:#e9f2fb; padding:12px; border-radius:6px; margin-bottom:16px;">
+              <h3 style="margin-top:0;">Bestellübersicht</h3>
+              <p><strong>Praxis:</strong> ${praxis}</p>
+              <p><strong>Abrechnung:</strong> ${abrechnung}</p>
+            </div>
+          `;
+
+          if (filledArticles.length) {
+            displayHtml += `
+              <table style="border-collapse: collapse; width: 100%; background: #fff;">
+                <thead>
+                  <tr style="background: #034f84; color: #fff;">
+                    <th>Artikel</th>
+                    <th>PZN</th>
+                    <th>Menge</th>
+                    <th>Geliefert am</th>
+                    <th>Geliefert von</th>
+                    <th>Notizen</th>
+                  </tr>
+                </thead>
+                <tbody>
+            `;
+            filledArticles.forEach(a => {
+              displayHtml += `
+                <tr>
+                  <td>${a.artikel}</td>
+                  <td>${a.pzn}</td>
+                  <td>${a.menge}</td>
+                  <td>${a.geliefert_am}</td>
+                  <td>${a.geliefert_von}</td>
+                  <td>${a.notizen}</td>
+                </tr>
+              `;
+            });
+            displayHtml += '</tbody></table>';
+          }
+
+          messageEl.innerHTML = displayHtml;
+          form.reset();
+        } else {
+          messageEl.textContent = `❌ Serverantwort: ${resp.statusText || resp.status}`;
         }
       } catch (err) {
         console.error(err);
@@ -131,3 +177,4 @@
   </script>
 </body>
 </html>
+
