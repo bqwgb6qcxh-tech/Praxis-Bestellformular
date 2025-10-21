@@ -15,12 +15,15 @@
     button { margin-top: 12px; padding: 10px 16px; border: none; border-radius: 6px; background: #034f84; color: #fff; cursor: pointer; }
     .message { margin-top: 12px; font-weight: bold; }
     textarea { resize: vertical; }
+    .lieferzeiten { margin-top: 16px; font-size: 0.95rem; }
+    .lieferzeiten p { margin: 4px 0; }
+    .red { color: #8B0000; font-weight: bold; }
   </style>
 </head>
 <body>
   <h1>Praxis-Bestellformular</h1>
 
-  <!-- NEUER KONTAKTBLOCK -->
+  <!-- Kontaktblock -->
   <div style="text-align: center; margin-bottom: 20px; font-family: Arial, sans-serif;">
     <p>Bestellung</p>
     <p><strong style="color: #8B0000;">Kurfürsten-Apotheke</strong></p>
@@ -54,6 +57,13 @@
       <tbody id="orderTableBody">
       </tbody>
     </table>
+
+    <!-- Lieferzeiten -->
+    <div class="lieferzeiten">
+      <p><strong>Lieferzeiten</strong></p>
+      <p>bei Bestellung bis Fr 17:00 Uhr: Lieferung <span class="red">Montags</span></p>
+      <p>bei Bestellung bis Mi 17:00 Uhr: Lieferung <span class="red">Donnerstags</span></p>
+    </div>
 
     <button type="submit">Bestellung senden</button>
     <div class="message" id="message"></div>
@@ -94,7 +104,6 @@
       formData.append('praxis', praxis);
       formData.append('abrechnung', abrechnung);
 
-      // Artikel-Daten sammeln
       const filledArticles = [];
       for (let i = 1; i <= ROWS; i++) {
         const artikel = form[`artikel_${i}`].value.trim();
@@ -125,11 +134,11 @@
         const resp = await fetch(ZAPIER_URL, { method: 'POST', body: formData });
 
         if (resp.ok) {
-          // Bestellübersicht anzeigen
+          // Bestellübersicht
           let displayHtml = `
             <div style="background:#e9f2fb; padding:12px; border-radius:6px; margin-bottom:16px;">
               <h3 style="margin-top:0;">Bestellübersicht</h3>
-              <p><strong>Praxis:</strong> ${praxis}</p>
+              <p><strong>Praxis:</strong> <span style="color: #8B0000; font-weight: bold;">${praxis}</span></p>
               <p><strong>Abrechnung:</strong> ${abrechnung}</p>
             </div>
           `;
@@ -149,9 +158,10 @@
                 </thead>
                 <tbody>
             `;
-            filledArticles.forEach(a => {
+            filledArticles.forEach((a, index) => {
+              const bg = (index % 2 === 0) ? 'background-color: #f9f9f9;' : '';
               displayHtml += `
-                <tr>
+                <tr style="${bg}">
                   <td>${a.artikel}</td>
                   <td>${a.pzn}</td>
                   <td>${a.menge}</td>
